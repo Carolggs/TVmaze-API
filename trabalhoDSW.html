@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Alunos:
+Carolina Guerreiro
+Letícia Yabuuti
+Victor Rodrigues -->
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css" />
+
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+    <title>Trabalho DSW</title>
+</head>
+
+<script>
+    $(document).ready(function () {
+        $("form").submit(function (e) {
+            e.preventDefault();
+            var tituloDigitado = $("input").val();
+
+
+            $.ajax({
+                url: "https://api.tvmaze.com/search/shows?q=" + tituloDigitado,
+                type: "get",
+
+                success: function (dados) {
+                    $("form").trigger("reset");
+                    $("#Series").empty();
+                    console.log(dados)
+
+                    for (let series of dados) {
+
+                        let div = $("<div>").addClass("resultados");
+                        let div2 = $("<div>").addClass("texto");
+                        let nome = $("<h3>").text(series.show.name);
+                        let resumo = $("<p>").html(series.show.summary);
+                        div2.append(nome, resumo);
+                        let id = series.show.id;
+                        div.attr("id", id);
+                        div.attr("data-toggle", "modal");
+                        div.attr("data-target", "#modalExemplo");
+
+
+                        if (series.show.image == null) {
+                            let imagem = $('<img/>', { src: "https://www.pngkey.com/png/full/233-2332677_ega-png.png" })
+                            $(div).append(imagem, div2);
+                        }
+                        else {
+                            let imagem = $('<img/>', { src: series.show.image.medium })
+                            $(div).append(imagem, div2);
+                        }
+                        div.on('click', function () {
+                            document.getElementById('id01').style.display = 'block';
+                            episodios(id)
+                        });
+                        $("#Series").append(div);
+
+                    }
+                },
+            })
+        });
+
+
+        function episodios(idSerie) {
+            $.ajax({
+                url: "https://api.tvmaze.com/shows/" + idSerie + "/episodes",
+                type: "get",
+
+                success: function (episodio) {
+                    $("#tabela").empty();
+                    var table = $("<table>")
+                    var tbody = $("<tbody>")
+                    var thead = $("<thead>")
+
+                    //cabeca da tabela
+                    var thNome = $("<th>").text("Nome")
+                    var thTemp = $("<th>").text("Temporada")
+                    var thEP = $("<th>").text("Episódio")
+                    var thData = $("<th>").text("Data")
+                    //adiciona ths na tr cabeca
+                    thead.append(thNome, thTemp, thEP, thData)
+                    table.append(thead)
+
+                    for (let infos of episodio) {
+
+                        let nome = infos.name;
+                        let temporada = infos.season;
+                        let epp = infos.number;
+                        let data = infos.airdate;
+
+                        var tr = $("<tr>")
+
+                        var td1 = $("<td>")
+                        var td2 = $("<td>")
+                        var td3 = $("<td>")
+                        var td4 = $("<td>")
+
+                        td1.text(nome);
+                        td2.text(temporada);
+                        td3.text(epp)
+                        td4.text(data)
+                        tr.append(td1, td2, td3, td4)
+                        tbody.append(tr)
+                        table.append(tbody)
+                        $("#tabela").append(table);
+                    }
+                },
+            })
+        }
+
+
+
+    });
+</script>
+<style>
+    html {
+        background-color: rgb(15, 15, 15);
+    }
+
+    header {
+        text-align: center;
+        font-size: 40px;
+        font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+        border-radius: 5px;
+        background-color: rgb(65, 64, 64);
+        color: black;
+        padding: 30px;
+        width: auto;
+        height: auto;
+        margin: 10px;
+    }
+
+    input {
+        border-radius: 30px;
+        width: 700px;
+        height: 40px;
+        margin: 20px;
+        font-size: 18px;
+        padding: 10px;
+    }
+
+    button {
+        border-radius: 100%;
+        width: 50px;
+        height: 50px;
+    }
+
+    button:hover {
+        background-color: rgb(110, 110, 110);
+    }
+
+    form {
+        text-align: center;
+    }
+
+    .resultados {
+        display: flex;
+        margin: 30px;
+        border-radius: 30px;
+        font-family: 'Courier New', Courier, monospace;
+        color: aliceblue;
+    }
+
+    img {
+        width: 210px;
+        height: 295px;
+        margin: 50px;
+        text-align: center;
+        font-size: 30px;
+    }
+
+    h3 {
+        color: antiquewhite;
+        font-size: 20px;
+    }
+
+    .texto {
+        margin: 50px;
+    }
+
+    .resultados:hover {
+        background-color: rgb(58, 57, 57);
+    }
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th,
+    td {
+        text-align: left;
+        padding: 8px;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+</style>
+
+<body>
+    <header class="w3-container w3-teal">
+        <h1>Busque Séries</h1>
+    </header>
+    <main>
+        <div>
+            <form>
+                <input type="text" placeholder="Digite a série que deseja buscar...">
+                <button type="submit"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-search" viewBox="0 0 16 16">
+                        <path
+                            d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+                    </svg></i></button>
+            </form>
+        </div>
+
+        <div id="Series">
+        </div>
+
+
+        <div class="w3-container">
+
+            <div id="id01" class="w3-modal">
+                <div class="w3-modal-content">
+                    <header class="w3-container w3-teal">
+                        <span onclick="document.getElementById('id01').style.display='none'"
+                            class="w3-button w3-display-topright">&times;</span>
+                        <h2>Episódios</h2>
+                    </header>
+                    <div class="w3-container" id="tabela">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>
